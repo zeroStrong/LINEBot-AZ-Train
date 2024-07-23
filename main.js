@@ -65,7 +65,7 @@ async function main()
         const status = $(elem).find('td span.colTrouble').text().trim() || '平常運転';
         const memo = $(elem).find('td').eq(2).text().trim();
   
-        if (status !== '平常運転' && userRouteList.includes(route)) {
+        if (status == '平常運転' && userRouteList.includes(route)) {
           troubleList.push({
             route: route,
             status: status,
@@ -87,4 +87,4 @@ async function main()
     }
 }
 
-main();
+setInterval(main, 30000);
