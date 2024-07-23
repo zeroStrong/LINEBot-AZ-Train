@@ -3,8 +3,8 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 
 // LINEBotのアクセストークンを設定
-const LINE_ACCESS_TOKEN = ''
-const USER_ID = '';
+const LINE_ACCESS_TOKEN = '7zb1GVoAW1abKC8hHSzukmeFFbGVEd6AZJ7dQq/F2BAZbTvQPmlvG4fsBgZYYwyWO9RE2FjBFm9wo0KkD+i/XDMV2fltbbantgU1awCJeOfTEo2/q5dXv02p/ltG8ff5UnxvLhG9RPVVnpUs1q5YUwdB04t89/1O/w1cDnyilFU='
+const USER_ID = 'U3c57f8b2741aa8d715028b63655cc5af';
 
 // -----------電車の遅延情報を取得する処理を記述-----------
 async function getTrainDelayInfo() 
