@@ -28,7 +28,7 @@ function sendLineMessage(message)
         'Authorization': `Bearer ${LINE_ACCESS_TOKEN}`
     };
     const data = {
-        to: 'USER_ID', // メッセージを送信するユーザーのID
+        to: USER_ID, // メッセージを送信するユーザーのID
         messages: [
             {
                 type: 'text',
