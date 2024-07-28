@@ -10,7 +10,9 @@ app.get('/', (req, res) => {
   res.send('Hello World')
 });
 
-app.listen(PORT);
+app.listen(port, () => {
+  console.log(`Example app listening at https://linebot-train.azurewebsites.net:${port}`)
+})
 
 
 // LINEBotのアクセストークンを設定
