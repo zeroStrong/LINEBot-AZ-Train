@@ -1,9 +1,11 @@
 {
   "name": "linebot_train_notice",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "start":"node index.js",
+    "start":"node app.js",
+    "lint": "eslint",
+    "format": "prettier --single-quote --write *.js", 
     "test": "echo \"Error: no test specified\" && exit 0"
   },
   "keywords": [],
