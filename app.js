@@ -10,8 +10,8 @@ app.get('/', (req, res) => {
   res.send('Hello World')
 });
 
-app.listen(port, () => {
-  console.log(`Example app listening at https://linebot-train.azurewebsites.net:${port}`)
+app.listen(PORT, () => {
+  console.log(`Example app listening at https://linebot-train.azurewebsites.net:${PORT}`)
 })
 
 
