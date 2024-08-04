@@ -18,7 +18,6 @@ const USER_ID = 'U3c57f8b2741aa8d715028b63655cc5af';
 // LINE Bot のイベントハンドラー
 app.post('/webhook', (req, res) => {
   const events = req.body.events;
-  console.log(events);
 
   events.forEach(event => {
     if (event.type === 'follow') {
@@ -51,7 +50,7 @@ async function getTrainDelayInfo()
 }
 
 // -----------LINEBotにメッセージを送信する関数-----------
-function sendLineMessage(message) 
+function sendLineMessage(user_id, message) 
 {
     const url = 'https://api.line.me/v2/bot/message/push';
     const headers = {
@@ -59,7 +58,7 @@ function sendLineMessage(message)
         'Authorization': `Bearer ${LINE_ACCESS_TOKEN}`
     };
     const data = {
-        to: USER_ID, // メッセージを送信するユーザーのID
+        to: user_id, // メッセージを送信するユーザーのID
         messages: [
             {
                 type: 'text',
@@ -110,7 +109,7 @@ async function main()
         for (let trouble of troubleList) {
           message += `路線: ${trouble.route}\n状態: ${trouble.status}\nメモ: ${trouble.memo}\n\n`;
         }
-        await sendLineMessage(message);
+        await sendLineMessage(USER_ID, message);
       }
   
     } catch (error) {
