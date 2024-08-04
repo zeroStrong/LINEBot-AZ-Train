@@ -20,6 +20,10 @@ app.post('/webhook', (req, res) => {
   const events = req.body.events;
 
   events.forEach(event => {
+
+    // イベントタイプを出力
+    console.log('イベントタイプ:', event.type); 
+
     if (event.type === 'follow') {
       // 友達登録イベント
       sendLineMessage(event.source.userId, '友達登録ありがとうございます！\n希望の電車の路線を教えてください。');
