@@ -8,6 +8,9 @@ const PORT = process.env.PORT || 3000;
 // debug
 app.get('/', (req, res) => res.send('Hello World!'))
 
+// JSONミドルウェア
+app.use(express.json());
+
 app.listen(PORT, () => {
   console.log(`Example app listening at https://linebot-train.azurewebsites.net:${PORT}`)
 })
@@ -20,6 +23,11 @@ const LINE_ACCESS_TOKEN = '7zb1GVoAW1abKC8hHSzukmeFFbGVEd6AZJ7dQq/F2BAZbTvQPmlvG
 // LINE Bot のイベントハンドラー
 app.post('/webhook', (req, res) => {
   const events = req.body.events;
+
+  if (!events) {
+    console.error('イベントが存在しません。');
+    return res.status(400).send('Bad Request');
+  }
 
   events.forEach(event => {
 
