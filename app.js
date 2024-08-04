@@ -5,10 +5,6 @@ const express = require('express')
 const app = express()
 const PORT = process.env.PORT || 3000;
 
-// debug
-app.get('/', (req, res) => {
-  res.send('Hello World')
-});
 
 app.listen(PORT, () => {
   console.log(`Example app listening at https://linebot-train.azurewebsites.net:${PORT}`)
@@ -18,6 +14,28 @@ app.listen(PORT, () => {
 // LINEBotのアクセストークンを設定
 const LINE_ACCESS_TOKEN = '7zb1GVoAW1abKC8hHSzukmeFFbGVEd6AZJ7dQq/F2BAZbTvQPmlvG4fsBgZYYwyWO9RE2FjBFm9wo0KkD+i/XDMV2fltbbantgU1awCJeOfTEo2/q5dXv02p/ltG8ff5UnxvLhG9RPVVnpUs1q5YUwdB04t89/1O/w1cDnyilFU='
 const USER_ID = 'U3c57f8b2741aa8d715028b63655cc5af';
+
+// LINE Bot のイベントハンドラー
+app.post('/webhook', (req, res) => {
+  const events = req.body.events;
+  console.log(events);
+
+  events.forEach(event => {
+    if (event.type === 'follow') {
+      // 友達登録イベント
+      sendLineMessage(event.source.userId, '友達登録ありがとうございます！\n希望の電車の路線を教えてください。');
+    } else if (event.type === 'message' && event.message.type === 'text') {
+      // テキストメッセージイベント
+      const message = event.message.text;
+      // ここにメッセージ処理を追加
+      console.log('ユーザーからのメッセージ:', message);
+    }
+  });
+
+  res.status(200).send({
+    "status": "OK"
+  });
+});
 
 // -----------電車の遅延情報を取得する処理を記述-----------
 async function getTrainDelayInfo() 
@@ -78,7 +96,7 @@ async function main()
         const status = $(elem).find('td span.colTrouble').text().trim() || '平常運転';
         const memo = $(elem).find('td').eq(2).text().trim();
   
-        if (status == '平常運転' && userRouteList.includes(route)) {
+        if (status != '平常運転' && userRouteList.includes(route)) {
           troubleList.push({
             route: route,
             status: status,
@@ -100,4 +118,4 @@ async function main()
     }
 }
 
-setInterval(main, 30000);
+//setInterval(main, 60000);
