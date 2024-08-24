@@ -195,14 +195,14 @@ app.post('/webhook', (req, res) => {
       // 路線選択状態
       } 
       if(userState[userId] === 'awaitingRoute') {
-        console.log('デバッグ2:', routesByRegion[message] );
-         if(routesByRegion[message]){
-          // userRouteListに路線データを追加
-          userRouteList.push[message];
-          sendLineMessage(userId, `路線: ${message} を登録しました。`);
-          delete userState[userId];
-         } else {
-          sendLineMessage(userId, '無効な路線が入力されました。');
+        const regionRoutes = Object.values(routesByRegion).flat();
+        if(regionRoutes.includes(message)){
+        // userRouteListに路線データを追加
+        userRouteList.push[message];
+        sendLineMessage(userId, `路線: ${message} を登録しました。`);
+        delete userState[userId];
+        } else {
+        sendLineMessage(userId, '無効な路線が入力されました。');
         }
       }
       // ここにメッセージ処理を追加
