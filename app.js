@@ -184,6 +184,7 @@ app.post('/webhook', (req, res) => {
       // 地域選択状態
       if (userState[userId] === 'awaitingRegion') {
         if(routesByRegion[message]){
+          console.log('デバッグ1:', routesByRegion[message] );
           const routeOptions = routesByRegion[message].join('\n');
           sendLineMessage(userId, `地域: ${message} \n登録したい路線のを以下から教えてください。\n${routeOptions}`);
           userState[userId] = 'awaitingRoute';
