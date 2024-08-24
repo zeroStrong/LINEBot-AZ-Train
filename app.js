@@ -9,6 +9,8 @@ const PORT = process.env.PORT || 3000;
 app.get('/', (req, res) => res.send('Hello World!'))
 
 // JSONミドルウェア
+// 受け取るフォーマットをJSON形式にする
+// しないと、イベントがうまく受けるとことができない
 app.use(express.json());
 
 app.listen(PORT, () => {
@@ -19,6 +21,137 @@ app.listen(PORT, () => {
 // LINEBotのアクセストークンを設定
 const LINE_ACCESS_TOKEN = '7zb1GVoAW1abKC8hHSzukmeFFbGVEd6AZJ7dQq/F2BAZbTvQPmlvG4fsBgZYYwyWO9RE2FjBFm9wo0KkD+i/XDMV2fltbbantgU1awCJeOfTEo2/q5dXv02p/ltG8ff5UnxvLhG9RPVVnpUs1q5YUwdB04t89/1O/w1cDnyilFU='
 //const USER_ID = 'U3c57f8b2741aa8d715028b63655cc5af';
+
+// userの登録状態を保持するリスト
+const userState = {};
+
+// userの路線データを保持
+const userRouteList = {};
+
+const routesByRegion = {
+  '北海道': [
+    '函館本線',
+    '室蘭本線',
+    '札幌市営地下鉄東西線',
+    '札幌市営地下鉄南北線',
+    '札幌市営地下鉄東豊線'
+  ],
+  '東北': [
+    '東北本線',
+    '奥羽本線',
+    '常磐線',
+    '仙山線',
+    '仙石線',
+    '磐越西線',
+    '五能線',
+    '田沢湖線',
+    '山形新幹線'
+  ],
+  '関東': [
+    '山手線',
+    '中央線',
+    '京浜東北線',
+    '総武線',
+    '常磐線',
+    '埼京線',
+    '湘南新宿ライン',
+    '京葉線',
+    '横須賀線',
+    '東海道線',
+    '南武線',
+    '武蔵野線',
+    '八高線',
+    '相模線',
+    '伊勢崎線',
+    '日比谷線',
+    '半蔵門線',
+    '銀座線',
+    '丸ノ内線',
+    '千代田線',
+    '東西線',
+    '有楽町線',
+    '南北線',
+    '副都心線',
+    'つくばエクスプレス'
+  ],
+  '中部': [
+    '東海道本線',
+    '中央本線',
+    '名鉄名古屋本線',
+    '近鉄名古屋線',
+    'あおなみ線',
+    '愛知環状鉄道線',
+    '北陸本線',
+    '高山本線',
+    '飯田線',
+    '静岡鉄道静岡清水線',
+    '伊豆箱根鉄道駿豆線'
+  ],
+  '近畿': [
+    'JR宝塚線',
+    'JR京都線',
+    'JR神戸線',
+    'JR東西線',
+    '山陽本線',
+    '阪急神戸本線',
+    '阪急宝塚本線',
+    '阪急京都本線',
+    '阪神本線',
+    '京阪本線・中之島線',
+    '京阪交野線',
+    '京阪宇治線',
+    '京阪京津線',
+    '京阪石山坂本線',
+    '近鉄奈良線',
+    '近鉄大阪線',
+    '南海本線',
+    '阪和線',
+    '大阪環状線',
+    '御堂筋線',
+    '谷町線',
+    '四つ橋線',
+    '中央線',
+    '千日前線',
+    '堺筋線'
+  ],
+  '中国': [
+    '山陽本線',
+    '伯備線',
+    '芸備線',
+    '津山線',
+    '福塩線',
+    '宇野線',
+    '赤穂線',
+    '境線',
+    '一畑電車北松江線',
+    '岡山電気軌道東山本線'
+  ],
+  '四国': [
+    '予讃線',
+    '土讃線',
+    '高徳線',
+    '徳島線',
+    '牟岐線',
+    '内子線',
+    '琴電琴平線',
+    '琴電長尾線',
+    '琴電志度線'
+  ],
+  '九州': [
+    '鹿児島本線',
+    '日豊本線',
+    '長崎本線',
+    '佐世保線',
+    '筑肥線',
+    '福岡市地下鉄空港線',
+    '福岡市地下鉄箱崎線',
+    '福岡市地下鉄七隈線',
+    '熊本市電A系統',
+    '熊本市電B系統',
+    '鹿児島市電第一期線',
+    '鹿児島市電第二期線'
+  ]
+};
 
 // LINE Bot のイベントハンドラー
 app.post('/webhook', (req, res) => {
@@ -36,10 +169,38 @@ app.post('/webhook', (req, res) => {
 
     if (event.type === 'follow') {
       // 友達登録イベント
-      sendLineMessage(event.source.userId, '友達登録ありがとうございます！\n希望の電車の路線を教えてください。');
+      const greeting = '友達登録ありがとうございます！\n希望の電車の路線を以下から教えてください。\n';
+      const region = '・北海道\n・東北\n・関東\n・中部\n・近畿\n・中国\n・四国\n・九州';
+
+      sendLineMessage(event.source.userId, greeting + region);
+      userState[event.source.userId] = 'awaitingRegion';
+
+      // メッセージが送信されたら、処理を実行
     } else if (event.type === 'message' && event.message.type === 'text') {
       // テキストメッセージイベント
       const message = event.message.text;
+      const userId = event.source.userId;
+
+      // 地域選択状態
+      if (userState[userId] === 'awaitingRegion') {
+        if(routesByRegion[message]){
+          const routeOptions = routesByRegion[message].join('\n');
+          sendLineMessage(userId, `地域: ${message} を選択しました。\n登録したい路線を以下から教えてください。\n${routeOptions}`);
+          userState[userId] = 'awaitingRoute';
+        } else {
+          sendLineMessage(userId, '無効な地域が入力されました。以下のリストから地域を選択してください。\n※複数路線入力する場合は、1度路線名を送信してから再度送信してください。\n・北海道\n・東北\n・関東\n・中部\n・近畿\n・中国\n・四国\n・九州');
+        }
+      // 路線選択状態
+      } else if(userState[userId] === 'awaitingRoute') 
+         if(routesByRegion[message]){
+          // userRouteListに路線データを追加
+          userRouteList.push[message];
+          sendLineMessage(userId, `路線: ${message} を登録しました。`);
+          delete userState[userId];
+         } else {
+          sendLineMessage(userId, '無効な路線が入力されました。');
+        }
+
       // ここにメッセージ処理を追加
       console.log('ユーザーからのメッセージ:', message);
     }
