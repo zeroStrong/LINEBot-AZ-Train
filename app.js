@@ -169,7 +169,7 @@ app.post('/webhook', (req, res) => {
 
     if (event.type === 'follow') {
       // 友達登録イベント
-      const greeting = '友達登録ありがとうございます！\n希望の電車の路線を以下から教えてください。\n';
+      const greeting = '友達登録ありがとうございます！\n希望の電車の路線が属する地域を以下から教えてください。\n';
       const region = '・北海道\n・東北\n・関東\n・中部\n・近畿\n・中国\n・四国\n・九州';
 
       sendLineMessage(event.source.userId, greeting + region);
@@ -185,13 +185,14 @@ app.post('/webhook', (req, res) => {
       if (userState[userId] === 'awaitingRegion') {
         if(routesByRegion[message]){
           const routeOptions = routesByRegion[message].join('\n');
-          sendLineMessage(userId, `地域: ${message} を選択しました。\n登録したい路線を以下から教えてください。\n${routeOptions}`);
+          sendLineMessage(userId, `地域: ${message} \n登録したい路線のを以下から教えてください。\n${routeOptions}`);
           userState[userId] = 'awaitingRoute';
         } else {
-          sendLineMessage(userId, '無効な地域が入力されました。以下のリストから地域を選択してください。\n※複数路線入力する場合は、1度路線名を送信してから再度送信してください。\n・北海道\n・東北\n・関東\n・中部\n・近畿\n・中国\n・四国\n・九州');
+          sendLineMessage(userId, '無効な地域が入力されました。以下のリストから地域を選択してください。\n・北海道\n・東北\n・関東\n・中部\n・近畿\n・中国\n・四国\n・九州');
         }
       // 路線選択状態
-      } else if(userState[userId] === 'awaitingRoute') 
+      } else if(userState[userId] === 'awaitingRoute') {
+        console.log('ユーザーからのメッセージ:', routesByRegion[message] );
          if(routesByRegion[message]){
           // userRouteListに路線データを追加
           userRouteList.push[message];
@@ -200,7 +201,7 @@ app.post('/webhook', (req, res) => {
          } else {
           sendLineMessage(userId, '無効な路線が入力されました。');
         }
-
+      }
       // ここにメッセージ処理を追加
       console.log('ユーザーからのメッセージ:', message);
     }
