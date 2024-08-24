@@ -191,7 +191,8 @@ app.post('/webhook', (req, res) => {
           sendLineMessage(userId, '無効な地域が入力されました。以下のリストから地域を選択してください。\n・北海道\n・東北\n・関東\n・中部\n・近畿\n・中国\n・四国\n・九州');
         }
       // 路線選択状態
-      } else if(userState[userId] === 'awaitingRoute') {
+      } 
+      if(userState[userId] === 'awaitingRoute') {
         console.log('ユーザーからのメッセージ:', routesByRegion[message] );
          if(routesByRegion[message]){
           // userRouteListに路線データを追加
