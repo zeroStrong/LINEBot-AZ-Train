@@ -197,6 +197,7 @@ app.post('/webhook', (req, res) => {
       if(userState[userId] === 'awaitingRoute') {
         const regionRoutes = Object.values(routesByRegion).flat();
         console.log('デバッグ2:', regionRoutes);
+        console.log('デバッグ3:', message);
         if(regionRoutes.includes(message)){
         // userRouteListに路線データを追加
         userRouteList.push[message];
