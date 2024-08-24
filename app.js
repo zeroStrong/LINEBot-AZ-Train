@@ -196,9 +196,11 @@ app.post('/webhook', (req, res) => {
       } 
       if(userState[userId] === 'awaitingRoute') {
         const regionRoutes = Object.values(routesByRegion).flat();
+        console.log('デバッグ2:', regionRoutes);
         if(regionRoutes.includes(message)){
         // userRouteListに路線データを追加
         userRouteList.push[message];
+        console.log('デバッグ3:', userRouteList);
         sendLineMessage(userId, `路線: ${message} を登録しました。`);
         delete userState[userId];
         } else {
