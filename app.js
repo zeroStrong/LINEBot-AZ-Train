@@ -190,10 +190,12 @@ app.post('/webhook', (req, res) => {
             sendLineMessage(userId, `地域: ${message} \n登録したい路線を以下から教えてください。\n${routeOptions}`);
             userState[userId] = 'awaitingRoute';
             console.log('デバッグログ:', userState[userId]);
+            return;
           } 
         else 
         {
           sendLineMessage(userId, '無効な地域が入力されました。以下のリストから地域を選択してください。\n・北海道\n・東北\n・関東\n・中部\n・近畿\n・中国\n・四国\n・九州');
+          return;
         }
       } 
 
