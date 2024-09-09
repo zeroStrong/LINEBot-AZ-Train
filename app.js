@@ -170,7 +170,8 @@ app.post('/webhook', (req, res) => {
     // イベントタイプを出力
     console.log('イベントタイプ:', event.type); 
 
-    if (event.type === 'follow') {
+    if (event.type === 'follow') 
+    {
       // 友達登録イベント
       const greeting = '友達登録ありがとうございます！\n希望の電車の路線が属する地域を以下から教えてください。\n';
       const region = '・北海道\n・東北\n・関東\n・中部\n・近畿\n・中国\n・四国\n・九州';
@@ -178,14 +179,15 @@ app.post('/webhook', (req, res) => {
       sendLineMessage(event.source.userId, greeting + region);
       userState[event.source.userId] = 'awaitingRegion';
 
-      // メッセージが送信されたら、処理を実行
-    } else if (event.type === 'message' && event.message.type === 'text') {
+      // メッセージが送信されたら、地域選択状態なら処理を実行
+    } else if (event.type === 'message' && event.message.type === 'text' && userState[userId] === 'awaitingRegion') 
+    {
       // テキストメッセージイベント
       const message = event.message.text;
       const userId = event.source.userId;
 
       // 地域選択状態
-      if (routesByRegion[message] && userState[userId] === 'awaitingRegion') {
+      if (routesByRegion[message]) {
         const routeOptions = routesByRegion[message].join('\n');
         sendLineMessage(userId, `地域: ${message} \n登録したい路線を以下から教えてください。\n${routeOptions}`);
         region = message;
@@ -194,8 +196,11 @@ app.post('/webhook', (req, res) => {
         sendLineMessage(userId, '無効な地域が入力されました。以下のリストから地域を選択してください。\n・北海道\n・東北\n・関東\n・中部\n・近畿\n・中国\n・四国\n・九州');
         }
 
+      //メッセージが送信され、路線選択状態なら処理を実行
+    } else if (event.type === 'message' && event.message.type === 'text' && userState[userId] === 'awaitingRoute') 
+    {
       // 路線選択状態
-      if (routesByRegion[region].includes(message) && userState[userId] === 'awaitingRoute') {
+      if (routesByRegion[region].includes(message)) {
         // userRouteListに路線データを追加
         userRouteList.push[message];
         sendLineMessage(userId, `路線: ${message} を登録しました。`);
@@ -203,9 +208,6 @@ app.post('/webhook', (req, res) => {
         } else {
         sendLineMessage(userId, '無効な路線が入力されました。');
         }
-
-      // ここにメッセージ処理を追加
-      console.log('ユーザーからのメッセージ:', message);
     }
   });
 
