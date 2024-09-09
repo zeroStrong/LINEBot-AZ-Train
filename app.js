@@ -170,7 +170,6 @@ app.post('/webhook', (req, res) => {
     // イベントタイプを出力
     console.log('イベントタイプ:', event.type); 
     const userId = event.source.userId;
-    const message = event.message.text;
 
     // 友達登録イベント
 
@@ -186,6 +185,8 @@ app.post('/webhook', (req, res) => {
       // メッセージが送信されたら、地域選択状態なら処理を実行
     } else if (event.type === 'message' && event.message.type === 'text' && userState[userId] === 'awaitingRegion') 
     {
+      const message = event.message.text;
+
       // 地域選択状態
       if (routesByRegion[message]) {
         const routeOptions = routesByRegion[message].join('\n');
@@ -199,6 +200,8 @@ app.post('/webhook', (req, res) => {
       //メッセージが送信され、路線選択状態なら処理を実行
     } else if (event.type === 'message' && event.message.type === 'text' && userState[userId] === 'awaitingRoute') 
     {
+      const message = event.message.text;
+
       // 路線選択状態
       if (routesByRegion[region].includes(message)) {
         // userRouteListに路線データを追加
