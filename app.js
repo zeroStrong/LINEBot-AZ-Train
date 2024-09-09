@@ -182,41 +182,26 @@ app.post('/webhook', (req, res) => {
       const userId = event.source.userId;
 
       // 地域選択状態
-      if (userState[userId] === 'awaitingRegion') {
-        if(routesByRegion[message])
-          {
-            console.log('デバッグ1:', routesByRegion[message] );
-            const routeOptions = routesByRegion[message].join('\n');
-            sendLineMessage(userId, `地域: ${message} \n登録したい路線を以下から教えてください。\n${routeOptions}`);
-            userState[userId] = 'awaitingRoute';
-            console.log('デバッグログ:', userState[userId]);
-            return;
-          } 
-        else 
-        {
-          sendLineMessage(userId, '無効な地域が入力されました。以下のリストから地域を選択してください。\n・北海道\n・東北\n・関東\n・中部\n・近畿\n・中国\n・四国\n・九州');
-          return;
+      if (routesByRegion[message]) {
+        console.log('デバッグ1:', routesByRegion[message]);
+        const routeOptions = routesByRegion[message].join('\n');
+        sendLineMessage(userId, `地域: ${message} \n登録したい路線を以下から教えてください。\n${routeOptions}`);
+        userState[userId] = 'awaitingRoute';
+        console.log('デバッグログ:', userState[userId]);
+        } else {
+        sendLineMessage(userId, '無効な地域が入力されました。以下のリストから地域を選択してください。\n・北海道\n・東北\n・関東\n・中部\n・近畿\n・中国\n・四国\n・九州');
         }
-      } 
 
       // 路線選択状態
-      if(userState[userId] === 'awaitingRoute') {
-        const regionRoutes = Object.values(routesByRegion).flat();
-        console.log('デバッグ2:', regionRoutes);
-        console.log('デバッグ3:', message);
-        if(regionRoutes.includes(message))
-          {
-            // userRouteListに路線データを追加
-            userRouteList.push[message];
-            console.log('デバッグ3:', userRouteList);
-            sendLineMessage(userId, `路線: ${message} を登録しました。`);
-            delete userState[userId];
-          } 
-        else 
-          {
-            sendLineMessage(userId, '無効な路線が入力されました。');
-          }
-      }
+      if (regionRoutes.includes(message)) {
+        // userRouteListに路線データを追加
+        userRouteList.push[message];
+        sendLineMessage(userId, `路線: ${message} を登録しました。`);
+        delete userState[userId];
+        } else {
+        sendLineMessage(userId, '無効な路線が入力されました。');
+        }
+        
       // ここにメッセージ処理を追加
       console.log('ユーザーからのメッセージ:', message);
     }
