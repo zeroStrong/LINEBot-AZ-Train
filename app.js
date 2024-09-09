@@ -29,7 +29,7 @@ const userState = {};
 const userRouteList = {};
 
 // 宣言した地域を保持
-var region;
+var area = '';
 
 const routesByRegion = {
   '北海道': [
@@ -168,13 +168,12 @@ app.post('/webhook', (req, res) => {
   events.forEach(event => {
 
     // イベントタイプを出力
-    console.log('イベントタイプ:', event.type); 
+    console.log('イベントタイプ:', event.type);
     const userId = event.source.userId;
 
     // 友達登録イベント
 
-    if (event.type === 'follow') 
-    {
+    if (event.type === 'follow') {
       // 友達登録イベント
       const greeting = '友達登録ありがとうございます！\n希望の電車の路線が属する地域を以下から教えてください。\n';
       const region = '・北海道\n・東北\n・関東\n・中部\n・近畿\n・中国\n・四国\n・九州';
@@ -183,34 +182,40 @@ app.post('/webhook', (req, res) => {
       userState[event.source.userId] = 'awaitingRegion';
 
       // メッセージが送信されたら、地域選択状態なら処理を実行
-    } else if (event.type === 'message' && event.message.type === 'text' && userState[userId] === 'awaitingRegion') 
-    {
+    } else if (event.type === 'message' && event.message.type === 'text' && userState[userId] === 'awaitingRegion') {
       const message = event.message.text;
 
-      // 地域選択状態
+      // 路線選択状態
       if (routesByRegion[message]) {
+        area = message; // 地域名を保持
         const routeOptions = routesByRegion[message].join('\n');
         sendLineMessage(userId, `地域: ${message} \n登録したい路線を以下から教えてください。\n${routeOptions}`);
         region = message;
         userState[userId] = 'awaitingRoute';
-        } else {
+      } else {
         sendLineMessage(userId, '無効な地域が入力されました。以下のリストから地域を選択してください。\n・北海道\n・東北\n・関東\n・中部\n・近畿\n・中国\n・四国\n・九州');
-        }
+      }
 
       //メッセージが送信され、路線選択状態なら処理を実行
-    } else if (event.type === 'message' && event.message.type === 'text' && userState[userId] === 'awaitingRoute') 
-    {
+    } else if (event.type === 'message' && event.message.type === 'text' && userState[userId] === 'awaitingRoute') {
       const message = event.message.text;
 
       // 路線選択状態
-      if (routesByRegion[region].includes(message)) {
+      if (routesByRegion[area].includes(message)) {
         // userRouteListに路線データを追加
         userRouteList.push[message];
         sendLineMessage(userId, `路線: ${message} を登録しました。`);
-        delete userState[userId];
-        } else {
+        sendLineMessage(userId, '引き続き路線を登録する場合は、路線名を入力してください。\n登録を終了する場合は、「終了」と入力してください。');
+      } else {
         sendLineMessage(userId, '無効な路線が入力されました。');
-        }
+      }
+    } else if (event.type === 'message' && event.message.type === 'text' && event.message.text === '終了') {
+      sendLineMessage(userId, '登録が完了しました！今後は以下のコマンドからいつでも呼びかけてください！\n' +
+                              '登録:路線を新たに追加したい場合はこちら!\n' + 
+                              '現在:現在登録中の路線を確認する場合はこちら!\n' + 
+                              '確認:どの路線が登録可能か確認する場合はこちら!\n' +
+                              '削除:現在登録中の路線を削除する場合はこちら!\n' + 
+                              'ヘルプ：どんなコマンドがあるか忘れた場合はこちら!')
     }
   });
 
@@ -220,84 +225,81 @@ app.post('/webhook', (req, res) => {
 });
 
 // -----------電車の遅延情報を取得する処理を記述-----------
-async function getTrainDelayInfo() 
-{
-    const url = "https://transit.yahoo.co.jp/diainfo/area/6";
-    try {
-        const response = await axios.get(url);
-        return response.data;
-    } catch(error){
-        console.error("電車の遅延情報の取得に失敗", error);
-        return null;
-    }
+async function getTrainDelayInfo() {
+  const url = "https://transit.yahoo.co.jp/diainfo/area/6";
+  try {
+    const response = await axios.get(url);
+    return response.data;
+  } catch (error) {
+    console.error("電車の遅延情報の取得に失敗", error);
+    return null;
+  }
 }
 
 // -----------LINEBotにメッセージを送信する関数-----------
-function sendLineMessage(user_id, message) 
-{
-    const url = 'https://api.line.me/v2/bot/message/push';
-    const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${LINE_ACCESS_TOKEN}`
-    };
-    const data = {
-        to: user_id, // メッセージを送信するユーザーのID
-        messages: [
-            {
-                type: 'text',
-                text: message
-            }
-        ]
-    };
+function sendLineMessage(user_id, message) {
+  const url = 'https://api.line.me/v2/bot/message/push';
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${LINE_ACCESS_TOKEN}`
+  };
+  const data = {
+    to: user_id, // メッセージを送信するユーザーのID
+    messages: [
+      {
+        type: 'text',
+        text: message
+      }
+    ]
+  };
 
-    return axios.post(url, data, { headers: headers })
+  return axios.post(url, data, { headers: headers })
     .then(response => {
-        console.log('メッセージ送信成功:', response.data);
+      console.log('メッセージ送信成功:', response.data);
     })
     .catch(error => {
-        console.error('メッセージ送信失敗:', error);
+      console.error('メッセージ送信失敗:', error);
     });
 }
 
 // メイン関数
-async function main() 
-{
-    try {
-      const userRouteList = ['阪急京都本線', 'JR京都線'];
-      const troubleList = [];
-      const srcHtml = await getTrainDelayInfo();
-      
-      if (!srcHtml) {
-        console.error('電車の遅延情報の取得に失敗しました。');
-        return;
-      }
-  
-      const $ = cheerio.load(srcHtml);
-      $('#mdAreaMajorLine tr').each((i, elem) => {
-        const route = $(elem).find('td').eq(0).text().trim();
-        const status = $(elem).find('td span.colTrouble').text().trim() || '平常運転';
-        const memo = $(elem).find('td').eq(2).text().trim();
-  
-        if (status != '平常運転' && userRouteList.includes(route)) {
-          troubleList.push({
-            route: route,
-            status: status,
-            memo: memo
-          });
-        }
-      });
-  
-      if (troubleList.length > 0) {
-        let message = '電車の遅延情報があります:\n';
-        for (let trouble of troubleList) {
-          message += `路線: ${trouble.route}\n状態: ${trouble.status}\nメモ: ${trouble.memo}\n\n`;
-        }
-        await sendLineMessage(USER_ID, message);
-      }
-  
-    } catch (error) {
-      console.error('メイン関数の実行中にエラーが発生しました:', error);
+async function main() {
+  try {
+    const userRouteList = ['阪急京都本線', 'JR京都線'];
+    const troubleList = [];
+    const srcHtml = await getTrainDelayInfo();
+
+    if (!srcHtml) {
+      console.error('電車の遅延情報の取得に失敗しました。');
+      return;
     }
+
+    const $ = cheerio.load(srcHtml);
+    $('#mdAreaMajorLine tr').each((i, elem) => {
+      const route = $(elem).find('td').eq(0).text().trim();
+      const status = $(elem).find('td span.colTrouble').text().trim() || '平常運転';
+      const memo = $(elem).find('td').eq(2).text().trim();
+
+      if (status != '平常運転' && userRouteList.includes(route)) {
+        troubleList.push({
+          route: route,
+          status: status,
+          memo: memo
+        });
+      }
+    });
+
+    if (troubleList.length > 0) {
+      let message = '電車の遅延情報があります:\n';
+      for (let trouble of troubleList) {
+        message += `路線: ${trouble.route}\n状態: ${trouble.status}\nメモ: ${trouble.memo}\n\n`;
+      }
+      await sendLineMessage(USER_ID, message);
+    }
+
+  } catch (error) {
+    console.error('メイン関数の実行中にエラーが発生しました:', error);
+  }
 }
 
 //setInterval(main, 60000);
