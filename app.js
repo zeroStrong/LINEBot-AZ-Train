@@ -169,6 +169,10 @@ app.post('/webhook', (req, res) => {
 
     // イベントタイプを出力
     console.log('イベントタイプ:', event.type); 
+    const userId = event.source.userId;
+    const message = event.message.text;
+
+    // 友達登録イベント
 
     if (event.type === 'follow') 
     {
@@ -182,10 +186,6 @@ app.post('/webhook', (req, res) => {
       // メッセージが送信されたら、地域選択状態なら処理を実行
     } else if (event.type === 'message' && event.message.type === 'text' && userState[userId] === 'awaitingRegion') 
     {
-      // テキストメッセージイベント
-      const message = event.message.text;
-      const userId = event.source.userId;
-
       // 地域選択状態
       if (routesByRegion[message]) {
         const routeOptions = routesByRegion[message].join('\n');
