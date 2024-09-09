@@ -199,6 +199,7 @@ app.post('/webhook', (req, res) => {
       //メッセージが送信され、路線選択状態なら処理を実行
     } else if (event.type === 'message' && event.message.type === 'text' && userState[userId] === 'awaitingRoute') {
       const message = event.message.text;
+      console.log('地域', routesByRegion[area]);
 
       // 路線選択状態
       if (routesByRegion[area].includes(message)) {
