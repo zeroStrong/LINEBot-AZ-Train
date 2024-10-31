@@ -26,7 +26,7 @@ const LINE_ACCESS_TOKEN = '7zb1GVoAW1abKC8hHSzukmeFFbGVEd6AZJ7dQq/F2BAZbTvQPmlvG
 const userState = {};
 
 // userの路線データを保持
-const userRouteList = {};
+const userRouteList = [];
 
 // 宣言した地域を保持
 var area = '';
