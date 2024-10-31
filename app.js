@@ -170,55 +170,58 @@ app.post('/webhook', (req, res) => {
     // イベントタイプを出力
     console.log('イベントタイプ:', event.type);
     const userId = event.source.userId;
+    const region = '・北海道\n・東北\n・関東\n・中部\n・近畿\n・中国\n・四国\n・九州';
 
     // 友達登録イベント
 
     if (event.type === 'follow') {
       // 友達登録イベント
       const greeting = '友達登録ありがとうございます！\n希望の電車の路線が属する地域を以下から教えてください。\n';
-      const region = '・北海道\n・東北\n・関東\n・中部\n・近畿\n・中国\n・四国\n・九州';
 
       sendLineMessage(event.source.userId, greeting + region);
       userState[event.source.userId] = 'awaitingRegion';
 
       // メッセージが送信されたら、地域選択状態なら処理を実行
-    } else if (event.type === 'message' && event.message.type === 'text' && userState[userId] === 'awaitingRegion') {
-      const message = event.message.text;
+    } else if (event.type === 'message' && event.message.type === 'text' && event.message.text === '終了') {
+        sendLineMessage(userId, '登録が完了しました！今後は以下のコマンドからいつでも呼びかけてください！\n' +
+                                '登録:路線を新たに追加したい場合はこちら!\n' + 
+                                '現在:現在登録中の路線を確認する場合はこちら!\n' + 
+                                '確認:どの路線が登録可能か確認する場合はこちら!\n' +
+                                '削除:現在登録中の路線を削除する場合はこちら!\n' + 
+                                'ヘルプ：どんなコマンドがあるか忘れた場合はこちら!')                         
+    } else if (event.type === 'message' && event.message.type === 'text' && event.message.text === '登録') { 
+      sendLineMessage(userId, '希望の電車の路線が属する地域を以下から教えてください。\n' + region);
+      userState[userId] = 'awaitingRegion';
 
-      // 路線選択状態
-      if (routesByRegion[message]) {
-        area = message; // 地域名を保持
-        const routeOptions = routesByRegion[message].join('\n');
-        sendLineMessage(userId, `地域: ${message} \n登録したい路線を以下から教えてください。\n${routeOptions}`);
-        userState[userId] = 'awaitingRoute';
-      } else {
-        sendLineMessage(userId, '無効な地域が入力されました。以下のリストから地域を選択してください。\n・北海道\n・東北\n・関東\n・中部\n・近畿\n・中国\n・四国\n・九州');
-      }
+    } else if (event.type === 'message' && event.message.type === 'text' && userState[userId] === 'awaitingRegion') {
+        const message = event.message.text;
+
+        // 路線選択状態
+        if (routesByRegion[message]) {
+          area = message; // 地域名を保持
+          const routeOptions = routesByRegion[message].join('\n');
+          sendLineMessage(userId, `地域: ${message} \n登録したい路線を以下から教えてください。\n${routeOptions}`);
+          userState[userId] = 'awaitingRoute';
+        } else {
+          sendLineMessage(userId, '無効な地域が入力されました。以下のリストから地域を選択してください。\n・北海道\n・東北\n・関東\n・中部\n・近畿\n・中国\n・四国\n・九州');
+        }
 
       //メッセージが送信され、路線選択状態なら処理を実行
     } else if (event.type === 'message' && event.message.type === 'text' && userState[userId] === 'awaitingRoute') {
-      const message = event.message.text;
-      console.log('地域', routesByRegion[area]);
-      console.log('area', area);
-      console.log('判定', routesByRegion[area].includes(message))
+        const message = event.message.text;
+        console.log('地域', routesByRegion[area]);
+        console.log('area', area);
+        console.log('判定', routesByRegion[area].includes(message))
 
-
-      // 路線選択状態
-      if (routesByRegion[area].includes(message)) {
-        // userRouteListに路線データを追加
-        userRouteList.push(message);
-        sendLineMessage(userId, `路線: ${message} を登録しました。`);
-        sendLineMessage(userId, '引き続き路線を登録する場合は、路線名を入力してください。\n登録を終了する場合は、「終了」と入力してください。');
-      } else {
-        sendLineMessage(userId, '無効な路線が入力されました。');
-      }
-    } else if (event.type === 'message' && event.message.type === 'text' && event.message.text === '終了') {
-      sendLineMessage(userId, '登録が完了しました！今後は以下のコマンドからいつでも呼びかけてください！\n' +
-                              '登録:路線を新たに追加したい場合はこちら!\n' + 
-                              '現在:現在登録中の路線を確認する場合はこちら!\n' + 
-                              '確認:どの路線が登録可能か確認する場合はこちら!\n' +
-                              '削除:現在登録中の路線を削除する場合はこちら!\n' + 
-                              'ヘルプ：どんなコマンドがあるか忘れた場合はこちら!')
+        // 路線選択状態
+        if (routesByRegion[area].includes(message)) {
+          // userRouteListに路線データを追加
+          userRouteList.push(message);
+          sendLineMessage(userId, `路線: ${message} を登録しました。`);
+          sendLineMessage(userId, '引き続き路線を登録する場合は、路線名を入力してください。\n登録を終了する場合は、「終了」と入力してください。');
+        } else {
+          sendLineMessage(userId, '無効な路線が入力されました。');
+        }
     }
   });
 
